@@ -56,6 +56,45 @@ sleep 2
 sudo systemctl is-active docker
 sleep 2
 
+
+# Install cri-dockerd: Docker adapter for Kubernetes
+echo "Installing cri-dockerd..."
+
+sudo apt-get update
+sudo apt-get install -y curl tar
+
+ARCH=$(dpkg --print-architecture)
+VERSION=$(curl -fsSL \
+  https://api.github.com/repos/Mirantis/cri-dockerd/releases/latest \
+  | grep '"tag_name":' | cut -d '"' -f 4 | sed 's/^v//')
+
+curl -fL \
+  "https://github.com/Mirantis/cri-dockerd/releases/download/v${VERSION}/cri-dockerd-${VERSION}.${ARCH}.tgz" \
+  -o /tmp/cri-dockerd.tgz
+
+tar -xzf /tmp/cri-dockerd.tgz -C /tmp
+
+sudo install -o root -g root -m 0755 \
+  /tmp/cri-dockerd/cri-dockerd /usr/local/bin/cri-dockerd
+
+sudo curl -fsSL \
+  https://raw.githubusercontent.com/Mirantis/cri-dockerd/master/packaging/systemd/cri-docker.service \
+  -o /etc/systemd/system/cri-docker.service
+
+sudo curl -fsSL \
+  https://raw.githubusercontent.com/Mirantis/cri-dockerd/master/packaging/systemd/cri-docker.socket \
+  -o /etc/systemd/system/cri-docker.socket
+
+sudo sed -i \
+  's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' \
+  /etc/systemd/system/cri-docker.service
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now cri-docker.socket
+
+sudo systemctl status cri-docker.socket --no-pager
+
+
 # 5. Install Kubernetes Components:
 echo "Installing Kubernetes components (kubelet, kubeadm, kubectl)..."
 sudo apt-get update
