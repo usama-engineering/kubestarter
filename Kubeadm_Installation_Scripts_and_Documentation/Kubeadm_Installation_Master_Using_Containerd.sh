@@ -4,7 +4,7 @@
 
 # 1. Initialize the Cluster
 echo "Initializing Kubernetes Cluster..."
-sudo kubeadm init
+sudo kubeadm init --cri-socket unix:///var/run/cri-dockerd.sock
 sleep 2
 
 # 2. Set Up Local kubeconfig
