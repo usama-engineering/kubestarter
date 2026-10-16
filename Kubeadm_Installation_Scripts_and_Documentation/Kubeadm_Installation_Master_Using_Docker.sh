@@ -23,5 +23,12 @@ echo "Generating join command for worker nodes..."
 kubeadm token create --print-join-command
 sleep 2
 
+echo "
+ ----- Example: -----
+ sudo kubeadm join <control-plane-ip>:6443 --token <token> \
+ --discovery-token-ca-cert-hash sha256:<hash> \
+ --cri-socket "unix:///var/run/cri-dockerd.sock" --v=5
+"
+
 echo "Kubernetes Master Node setup complete."
 
